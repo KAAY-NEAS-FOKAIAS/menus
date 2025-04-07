@@ -171,18 +171,18 @@
     }
 
     function editProduct(cat, index) {
-  const item = menu[cat][index];
-  const row = document.getElementById(`row-${cat}-${index}`);
-  row.innerHTML = `
-    <td><input id="edit-name-${cat}-${index}" value="${item.name}" /></td>
-    <td><input id="edit-price-${cat}-${index}" value="${item.price || ''}" /></td>
-    <td><textarea id="edit-desc-${cat}-${index}">${item.desc || ''}</textarea></td>
-    <td>
-      <button class="save-btn" onclick="saveEdit('${cat}', ${index})">Save</button>
-      <button class="delete-btn" onclick="deleteProduct('${cat}', ${index})">Delete</button>
-    </td>
-  `;
-}
+      const item = menu[cat][index];
+      const row = document.getElementById(`row-${cat}-${index}`);
+      row.innerHTML = `
+        <td><input id="edit-name-${cat}-${index}" value="${item.name}" /></td>
+        <td><input id="edit-price-${cat}-${index}" value="${item.price || ''}" /></td>
+        <td><textarea id="edit-desc-${cat}-${index}">${item.desc || ''}</textarea></td>
+        <td>
+          <button class="save-btn" onclick="saveEdit('${cat}', ${index})">Save</button>
+          <button class="delete-btn" onclick="deleteProduct('${cat}', ${index})">Delete</button>
+        </td>
+      `;
+    }
 
     function saveEdit(cat, index) {
       const name = document.getElementById(`edit-name-${cat}-${index}`).value.trim();
