@@ -98,6 +98,13 @@
   <div class="container">
     <h1>KAAY Admin Panel</h1>
 
+    <h3>Select Menu</h3>
+    <select id="menuType" onchange="switchMenu()">
+      <option value="bar">Bar</option>
+      <option value="restaurant">Restaurant</option>
+      <option value="mini_market">Mini Market</option>
+    </select>
+
     <h3>Add Category</h3>
     <input type="text" id="categoryInput" placeholder="Enter category name" />
     <button onclick="addCategory()">Add Category</button>
@@ -119,11 +126,23 @@
     const productPrice = document.getElementById("productPrice");
     const productDesc = document.getElementById("productDesc");
     const menuPreview = document.getElementById("menuPreview");
+    const menuType = document.getElementById("menuType");
 
-    let menu = JSON.parse(localStorage.getItem("kaay_menu")) || {};
+    let currentMenuKey = `kaay_menu_${menuType.value}`;
+    let menu = loadMenu(currentMenuKey);
+
+    function loadMenu(key) {
+      return JSON.parse(localStorage.getItem(key)) || {};
+    }
 
     function saveMenu() {
-      localStorage.setItem("kaay_menu", JSON.stringify(menu));
+      localStorage.setItem(currentMenuKey, JSON.stringify(menu));
+    }
+
+    function switchMenu() {
+      currentMenuKey = `kaay_menu_${menuType.value}`;
+      menu = loadMenu(currentMenuKey);
+      renderMenu();
     }
 
     function addCategory() {
@@ -152,18 +171,18 @@
     }
 
     function editProduct(cat, index) {
-      const item = menu[cat][index];
-      const row = document.getElementById(`row-${cat}-${index}`);
-      row.innerHTML = `
-        <td><input id="edit-name-${cat}-${index}" value="${item.name}" /></td>
-        <td><input id="edit-price-${cat}-${index}" value="${item.price || ''}" /></td>
-        <td><textarea id="edit-desc-${cat}-${index}">${item.desc || ''}</textarea></td>
-        <td>
-          <button class="save-btn" onclick="saveEdit('${cat}', ${index})">Save</button>
-          <button class="delete-btn" onclick="deleteProduct('${cat}', ${index})">Delete</button>
-        </td>
-      `;
-    }
+  const item = menu[cat][index];
+  const row = document.getElementById(`row-${cat}-${index}`);
+  row.innerHTML = `
+    <td><input id="edit-name-${cat}-${index}" value="${item.name}" /></td>
+    <td><input id="edit-price-${cat}-${index}" value="${item.price || ''}" /></td>
+    <td><textarea id="edit-desc-${cat}-${index}">${item.desc || ''}</textarea></td>
+    <td>
+      <button class="save-btn" onclick="saveEdit('${cat}', ${index})">Save</button>
+      <button class="delete-btn" onclick="deleteProduct('${cat}', ${index})">Delete</button>
+    </td>
+  `;
+}
 
     function saveEdit(cat, index) {
       const name = document.getElementById(`edit-name-${cat}-${index}`).value.trim();
@@ -189,13 +208,11 @@
       menuPreview.innerHTML = "";
 
       for (let category in menu) {
-        // Populate dropdown
         const option = document.createElement("option");
         option.value = category;
         option.textContent = category;
         categorySelect.appendChild(option);
 
-        // Create category table
         const section = document.createElement("div");
         section.className = "category-section";
         section.innerHTML = `<h2>${category}</h2>`;
