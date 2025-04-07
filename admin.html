@@ -17,14 +17,15 @@
       margin-bottom: 1rem;
     }
 
-    input, select, button {
+    input, select, button, textarea {
       padding: 0.5rem;
       margin: 0.4rem 0;
       width: 100%;
-      max-width: 400px;
+      max-width: 500px;
       border-radius: 6px;
       border: none;
       font-size: 1rem;
+      display: block;
     }
 
     button {
@@ -37,24 +38,63 @@
       background-color: #218838;
     }
 
-    .category {
-      margin-top: 1.5rem;
-    }
-
-    .product {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.3rem 0;
-      border-bottom: 1px solid #333;
-    }
-
     .container {
-      max-width: 500px;
+      max-width: 600px;
       margin: auto;
+    }
+
+    .category-section {
+      margin-top: 2rem;
+      border-top: 1px solid #444;
+      padding-top: 1rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+    }
+
+    th, td {
+      padding: 0.6rem;
+      border-bottom: 1px solid #444;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    .edit-btn, .delete-btn, .save-btn {
+      background-color: #007bff;
+      margin-right: 0.5rem;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .delete-btn {
+      background-color: #dc3545;
+    }
+
+    .save-btn {
+      background-color: #17a2b8;
+    }
+
+    textarea {
+      resize: vertical;
     }
   </style>
 </head>
 <body>
+  <script>
+    const PASSWORD = "kaay123";
+    const entered = prompt("Enter admin password:");
+    if (entered !== PASSWORD) {
+      alert("Access denied");
+      document.body.innerHTML = "<h1 style='color:white;text-align:center;margin-top:2rem;'>Access Denied ❌</h1>";
+      throw new Error("Unauthorized access");
+    }
+  </script>
+
   <div class="container">
     <h1>KAAY Admin Panel</h1>
 
@@ -65,10 +105,11 @@
     <h3>Add Product</h3>
     <select id="categorySelect"></select>
     <input type="text" id="productName" placeholder="Product name" />
-    <input type="text" id="productPrice" placeholder="Price (e.g. €5)" />
+    <input type="text" id="productPrice" placeholder="Price (optional)" />
+    <textarea id="productDesc" placeholder="Description (optional)"></textarea>
     <button onclick="addProduct()">Add Product</button>
 
-    <div id="menuDisplay"></div>
+    <div id="menuPreview"></div>
   </div>
 
   <script>
@@ -76,45 +117,13 @@
     const categorySelect = document.getElementById("categorySelect");
     const productName = document.getElementById("productName");
     const productPrice = document.getElementById("productPrice");
-    const menuDisplay = document.getElementById("menuDisplay");
-    const PASSWORD = "kaay123"; // change this!
-    const entered = prompt("Enter admin password:");
+    const productDesc = document.getElementById("productDesc");
+    const menuPreview = document.getElementById("menuPreview");
 
     let menu = JSON.parse(localStorage.getItem("kaay_menu")) || {};
-    if (entered !== PASSWORD) {
-      alert("Access denied");
-      document.body.innerHTML = "<h1 style='color:white;text-align:center;margin-top:2rem;'>Access Denied ❌</h1>";
-      throw new Error("Unauthorized access");
-    }
 
     function saveMenu() {
       localStorage.setItem("kaay_menu", JSON.stringify(menu));
-    }
-
-    function renderMenu() {
-      categorySelect.innerHTML = "";
-      menuDisplay.innerHTML = "";
-      for (let category in menu) {
-        // Populate select dropdown
-        const option = document.createElement("option");
-        option.value = category;
-        option.textContent = category;
-        categorySelect.appendChild(option);
-
-        // Render category & products
-        const catDiv = document.createElement("div");
-        catDiv.className = "category";
-        catDiv.innerHTML = `<h2>${category}</h2>`;
-
-        menu[category].forEach(prod => {
-          const prodDiv = document.createElement("div");
-          prodDiv.className = "product";
-          prodDiv.innerHTML = `<span>${prod.name}</span><span>${prod.price}</span>`;
-          catDiv.appendChild(prodDiv);
-        });
-
-        menuDisplay.appendChild(catDiv);
-      }
     }
 
     function addCategory() {
@@ -131,12 +140,93 @@
       const cat = categorySelect.value;
       const name = productName.value.trim();
       const price = productPrice.value.trim();
-      if (cat && name && price) {
-        menu[cat].push({ name, price });
+      const desc = productDesc.value.trim();
+      if (cat && name) {
+        menu[cat].push({ name, price, desc });
         productName.value = "";
         productPrice.value = "";
+        productDesc.value = "";
         saveMenu();
         renderMenu();
+      }
+    }
+
+    function editProduct(cat, index) {
+      const item = menu[cat][index];
+      const row = document.getElementById(`row-${cat}-${index}`);
+      row.innerHTML = `
+        <td><input id="edit-name-${cat}-${index}" value="${item.name}" /></td>
+        <td><input id="edit-price-${cat}-${index}" value="${item.price || ''}" /></td>
+        <td><textarea id="edit-desc-${cat}-${index}">${item.desc || ''}</textarea></td>
+        <td>
+          <button class="save-btn" onclick="saveEdit('${cat}', ${index})">Save</button>
+          <button class="delete-btn" onclick="deleteProduct('${cat}', ${index})">Delete</button>
+        </td>
+      `;
+    }
+
+    function saveEdit(cat, index) {
+      const name = document.getElementById(`edit-name-${cat}-${index}`).value.trim();
+      const price = document.getElementById(`edit-price-${cat}-${index}`).value.trim();
+      const desc = document.getElementById(`edit-desc-${cat}-${index}`).value.trim();
+      if (name) {
+        menu[cat][index] = { name, price, desc };
+        saveMenu();
+        renderMenu();
+      }
+    }
+
+    function deleteProduct(cat, index) {
+      if (confirm("Are you sure you want to delete this product?")) {
+        menu[cat].splice(index, 1);
+        saveMenu();
+        renderMenu();
+      }
+    }
+
+    function renderMenu() {
+      categorySelect.innerHTML = "";
+      menuPreview.innerHTML = "";
+
+      for (let category in menu) {
+        // Populate dropdown
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        categorySelect.appendChild(option);
+
+        // Create category table
+        const section = document.createElement("div");
+        section.className = "category-section";
+        section.innerHTML = `<h2>${category}</h2>`;
+
+        const table = document.createElement("table");
+        table.innerHTML = `
+          <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        `;
+
+        menu[category].forEach((item, idx) => {
+          const row = document.createElement("tr");
+          row.id = `row-${category}-${idx}`;
+          row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.price || ''}</td>
+            <td>${item.desc || ''}</td>
+            <td>
+              <button class="edit-btn" onclick="editProduct('${category}', ${idx})">Edit</button>
+              <button class="delete-btn" onclick="deleteProduct('${category}', ${idx})">Delete</button>
+            </td>
+          `;
+          table.appendChild(row);
+        });
+
+        section.appendChild(table);
+        menuPreview.appendChild(section);
       }
     }
 
