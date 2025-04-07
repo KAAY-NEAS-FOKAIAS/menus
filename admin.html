@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KAAY Admin Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      padding: 1rem;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    input, select, button {
+      padding: 0.5rem;
+      margin: 0.4rem 0;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .category {
+      margin-top: 1.5rem;
+    }
+
+    .product {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #333;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>KAAY Admin Panel</h1>
+
+    <h3>Add Category</h3>
+    <input type="text" id="categoryInput" placeholder="Enter category name" />
+    <button onclick="addCategory()">Add Category</button>
+
+    <h3>Add Product</h3>
+    <select id="categorySelect"></select>
+    <input type="text" id="productName" placeholder="Product name" />
+    <input type="text" id="productPrice" placeholder="Price (e.g. €5)" />
+    <button onclick="addProduct()">Add Product</button>
+
+    <div id="menuDisplay"></div>
+  </div>
+
+  <script>
+    const categoryInput = document.getElementById("categoryInput");
+    const categorySelect = document.getElementById("categorySelect");
+    const productName = document.getElementById("productName");
+    const productPrice = document.getElementById("productPrice");
+    const menuDisplay = document.getElementById("menuDisplay");
+
+    let menu = JSON.parse(localStorage.getItem("kaay_menu")) || {};
+
+    function saveMenu() {
+      localStorage.setItem("kaay_menu", JSON.stringify(menu));
+    }
+
+    function renderMenu() {
+      categorySelect.innerHTML = "";
+      menuDisplay.innerHTML = "";
+      for (let category in menu) {
+        // Populate select dropdown
+        const option = document.createElement("option");
+        option.value = category;
+        option.textContent = category;
+        categorySelect.appendChild(option);
+
+        // Render category & products
+        const catDiv = document.createElement("div");
+        catDiv.className = "category";
+        catDiv.innerHTML = `<h2>${category}</h2>`;
+
+        menu[category].forEach(prod => {
+          const prodDiv = document.createElement("div");
+          prodDiv.className = "product";
+          prodDiv.innerHTML = `<span>${prod.name}</span><span>${prod.price}</span>`;
+          catDiv.appendChild(prodDiv);
+        });
+
+        menuDisplay.appendChild(catDiv);
+      }
+    }
+
+    function addCategory() {
+      const cat = categoryInput.value.trim();
+      if (cat && !menu[cat]) {
+        menu[cat] = [];
+        categoryInput.value = "";
+        saveMenu();
+        renderMenu();
+      }
+    }
+
+    function addProduct() {
+      const cat = categorySelect.value;
+      const name = productName.value.trim();
+      const price = productPrice.value.trim();
+      if (cat && name && price) {
+        menu[cat].push({ name, price });
+        productName.value = "";
+        productPrice.value = "";
+        saveMenu();
+        renderMenu();
+      }
+    }
+
+    renderMenu();
+  </script>
+</body>
+</html>
