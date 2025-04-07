@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KAAY Bar Menu</title>
+  <title>KAAY Mini Market Menu</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -52,11 +52,11 @@
   </style>
 </head>
 <body>
-  <h1>KAAY Bar Menu</h1>
+  <h1>KAAY Mini Market Menu</h1>
   <div id="menuOutput"></div>
 
   <script>
-    const menu = JSON.parse(localStorage.getItem("kaay_menu_bar")) || {};
+    const menu = JSON.parse(localStorage.getItem("kaay_menu_mini_market")) || {};
     const output = document.getElementById("menuOutput");
 
     for (let category in menu) {
