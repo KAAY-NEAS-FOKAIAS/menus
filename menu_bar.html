@@ -3,20 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KAAY - Bar Menu</title>
+  <title>KAAY Bar Menu</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       background-color: #1a1a1a;
       color: #fff;
-      margin: 0;
       padding: 1rem;
     }
 
     h1 {
       text-align: center;
-      font-size: 2.2rem;
-      margin-bottom: 1.5rem;
+      font-size: 2rem;
+      margin-bottom: 1rem;
     }
 
     .section {
@@ -24,7 +23,7 @@
     }
 
     .section h2 {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       border-bottom: 2px solid #fff;
       padding-bottom: 0.3rem;
       margin-bottom: 1rem;
@@ -33,27 +32,14 @@
     .item {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 0.8rem;
-    }
-
-    .item-name {
-      font-weight: 500;
+      margin-bottom: 0.6rem;
     }
 
     .price {
-      font-weight: 400;
       color: #ccc;
     }
 
     @media (max-width: 480px) {
-      h1 {
-        font-size: 1.8rem;
-      }
-
-      .section h2 {
-        font-size: 1.3rem;
-      }
-
       .item {
         flex-direction: column;
         align-items: flex-start;
@@ -66,48 +52,27 @@
   </style>
 </head>
 <body>
-
   <h1>KAAY Bar Menu</h1>
+  <div id="menuOutput"></div>
 
-  <div class="section">
-    <h2>Cocktails</h2>
-    <div class="item">
-      <span class="item-name">Mojito</span>
-      <span class="price">€8</span>
-    </div>
-    <div class="item">
-      <span class="item-name">Margarita</span>
-      <span class="price">€9</span>
-    </div>
-    <div class="item">
-      <span class="item-name">Aperol Spritz</span>
-      <span class="price">€7</span>
-    </div>
-  </div>
+  <script>
+    const menu = JSON.parse(localStorage.getItem("kaay_menu")) || {};
+    const output = document.getElementById("menuOutput");
 
-  <div class="section">
-    <h2>Beers</h2>
-    <div class="item">
-      <span class="item-name">Mythos</span>
-      <span class="price">€4</span>
-    </div>
-    <div class="item">
-      <span class="item-name">Heineken</span>
-      <span class="price">€4.5</span>
-    </div>
-  </div>
+    for (let category in menu) {
+      const section = document.createElement("div");
+      section.className = "section";
+      section.innerHTML = `<h2>${category}</h2>`;
+      
+      menu[category].forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<span>${item.name}</span><span class="price">${item.price}</span>`;
+        section.appendChild(div);
+      });
 
-  <div class="section">
-    <h2>Soft Drinks</h2>
-    <div class="item">
-      <span class="item-name">Coca-Cola / Light / Zero</span>
-      <span class="price">€2.5</span>
-    </div>
-    <div class="item">
-      <span class="item-name">Soda / Tonic / Lemonade</span>
-      <span class="price">€2.5</span>
-    </div>
-  </div>
-
+      output.appendChild(section);
+    }
+  </script>
 </body>
 </html>

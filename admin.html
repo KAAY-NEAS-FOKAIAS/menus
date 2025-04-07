@@ -77,8 +77,15 @@
     const productName = document.getElementById("productName");
     const productPrice = document.getElementById("productPrice");
     const menuDisplay = document.getElementById("menuDisplay");
+    const PASSWORD = "kaay123"; // change this!
+    const entered = prompt("Enter admin password:");
 
     let menu = JSON.parse(localStorage.getItem("kaay_menu")) || {};
+    if (entered !== PASSWORD) {
+      alert("Access denied");
+      document.body.innerHTML = "<h1 style='color:white;text-align:center;margin-top:2rem;'>Access Denied ❌</h1>";
+      throw new Error("Unauthorized access");
+    }
 
     function saveMenu() {
       localStorage.setItem("kaay_menu", JSON.stringify(menu));
