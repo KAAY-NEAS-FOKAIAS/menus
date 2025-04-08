@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>KAAY Restaurant Menu</title>
+  <title>KAAY Bar Menu</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -11,40 +11,33 @@
       color: #fff;
       padding: 1rem;
     }
-
     h1 {
       text-align: center;
       font-size: 2rem;
       margin-bottom: 1rem;
     }
-
     .section {
       margin-bottom: 2rem;
     }
-
     .section h2 {
       font-size: 1.4rem;
       border-bottom: 2px solid #fff;
       padding-bottom: 0.3rem;
       margin-bottom: 1rem;
     }
-
     .item {
       display: flex;
       justify-content: space-between;
       margin-bottom: 0.6rem;
     }
-
     .price {
       color: #ccc;
     }
-
     @media (max-width: 480px) {
       .item {
         flex-direction: column;
         align-items: flex-start;
       }
-
       .price {
         align-self: flex-end;
       }
@@ -55,24 +48,45 @@
   <h1>KAAY Restaurant Menu</h1>
   <div id="menuOutput"></div>
 
-  <script>
-    const menu = JSON.parse(localStorage.getItem("kaay_menu_restaurant")) || {};
-    const output = document.getElementById("menuOutput");
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-    for (let category in menu) {
-      const section = document.createElement("div");
-      section.className = "section";
-      section.innerHTML = `<h2>${category}</h2>`;
-      
-      menu[category].forEach(item => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.innerHTML = `<span><strong>${item.name}</strong><br><small>${item.desc || ''}</small></span><span class="price">${item.price || ''}</span>`;
-        section.appendChild(div);
-      });
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0HRhjtRkaTUq332zouyT2ZR-44KBd0kM",
+      authDomain: "kaay-menus.firebaseapp.com",
+      projectId: "kaay-menus",
+      storageBucket: "kaay-menus.firebasestorage.app",
+      messagingSenderId: "1064707215004",
+      appId: "1:1064707215004:web:1805e202273546e1dae759"
+    };
 
-      output.appendChild(section);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadMenu() {
+      const docRef = doc(db, "menus", "restaurant");
+      const docSnap = await getDoc(docRef);
+      const data = docSnap.exists() ? docSnap.data() : {};
+      const output = document.getElementById("menuOutput");
+
+      for (let category in data) {
+        const section = document.createElement("div");
+        section.className = "section";
+        section.innerHTML = `<h2>${category}</h2>`;
+
+        data[category].forEach(item => {
+          const div = document.createElement("div");
+          div.className = "item";
+          div.innerHTML = `<span><strong>${item.name}</strong><br><small>${item.desc || ''}</small></span><span class="price">${item.price || ''}</span>`;
+          section.appendChild(div);
+        });
+
+        output.appendChild(section);
+      }
     }
+
+    loadMenu();
   </script>
 </body>
 </html>

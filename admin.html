@@ -6,248 +6,200 @@
   <title>KAAY Admin Panel</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #111;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #111;
       color: #fff;
-      padding: 1rem;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
     }
 
     h1 {
       text-align: center;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
 
-    input, select, button, textarea {
-      padding: 0.5rem;
-      margin: 0.4rem 0;
-      width: 100%;
-      max-width: 500px;
+    form, .menu-section {
+      margin-bottom: 2rem;
+    }
+
+    input, select, button {
+      padding: 0.7rem;
+      font-size: 1rem;
       border-radius: 6px;
       border: none;
-      font-size: 1rem;
-      display: block;
+      margin-bottom: 0.5rem;
+      width: 100%;
+    }
+
+    input, select {
+      background-color: #222;
+      color: #fff;
     }
 
     button {
-      background-color: #28a745;
+      background-color: #00b894;
       color: white;
       cursor: pointer;
     }
 
     button:hover {
-      background-color: #218838;
+      background-color: #019875;
     }
 
-    .container {
-      max-width: 600px;
-      margin: auto;
-    }
-
-    .category-section {
-      margin-top: 2rem;
-      border-top: 1px solid #444;
-      padding-top: 1rem;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 0.5rem;
-    }
-
-    th, td {
-      padding: 0.6rem;
+    .menu-section h3 {
       border-bottom: 1px solid #444;
-      text-align: left;
-      font-size: 0.95rem;
+      padding-bottom: 0.3rem;
     }
 
-    .edit-btn, .delete-btn, .save-btn {
-      background-color: #007bff;
-      margin-right: 0.5rem;
-      border: none;
-      padding: 0.3rem 0.6rem;
-      border-radius: 4px;
-      cursor: pointer;
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.4rem 0;
+      border-bottom: 1px dashed #333;
     }
 
-    .delete-btn {
-      background-color: #dc3545;
-    }
-
-    .save-btn {
-      background-color: #17a2b8;
-    }
-
-    textarea {
-      resize: vertical;
+    .actions button {
+      margin-left: 5px;
+      padding: 4px 8px;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
-  <script>
-    const PASSWORD = "kaay123";
-    const entered = prompt("Enter admin password:");
-    if (entered !== PASSWORD) {
-      alert("Access denied");
-      document.body.innerHTML = "<h1 style='color:white;text-align:center;margin-top:2rem;'>Access Denied ❌</h1>";
-      throw new Error("Unauthorized access");
-    }
-  </script>
+  <h1>KAAY Admin Panel</h1>
 
-  <div class="container">
-    <h1>KAAY Admin Panel</h1>
+  <label for="menuSelector">Choose Menu:</label>
+  <select id="menuSelector">
+    <option value="bar">Bar</option>
+    <option value="restaurant">Restaurant</option>
+    <option value="mini_market">Mini Market</option>
+  </select>
 
-    <h3>Select Menu</h3>
-    <select id="menuType" onchange="switchMenu()">
-      <option value="bar">Bar</option>
-      <option value="restaurant">Restaurant</option>
-      <option value="mini_market">Mini Market</option>
-    </select>
+  <form id="productForm">
+    <input id="category" placeholder="Category" required />
+    <input id="name" placeholder="Product Name" required />
+    <input id="price" placeholder="Price (optional)" />
+    <input id="desc" placeholder="Description (optional)" />
+    <button type="submit">Add Product</button>
+  </form>
 
-    <h3>Add Category</h3>
-    <input type="text" id="categoryInput" placeholder="Enter category name" />
-    <button onclick="addCategory()">Add Category</button>
+  <div id="menuDisplay"></div>
 
-    <h3>Add Product</h3>
-    <select id="categorySelect"></select>
-    <input type="text" id="productName" placeholder="Product name" />
-    <input type="text" id="productPrice" placeholder="Price (optional)" />
-    <textarea id="productDesc" placeholder="Description (optional)"></textarea>
-    <button onclick="addProduct()">Add Product</button>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-    <div id="menuPreview"></div>
-  </div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0HRhjtRkaTUq332zouyT2ZR-44KBd0kM",
+      authDomain: "kaay-menus.firebaseapp.com",
+      projectId: "kaay-menus",
+      storageBucket: "kaay-menus.firebasestorage.app",
+      messagingSenderId: "1064707215004",
+      appId: "1:1064707215004:web:1805e202273546e1dae759"
+    };
 
-  <script>
-    const categoryInput = document.getElementById("categoryInput");
-    const categorySelect = document.getElementById("categorySelect");
-    const productName = document.getElementById("productName");
-    const productPrice = document.getElementById("productPrice");
-    const productDesc = document.getElementById("productDesc");
-    const menuPreview = document.getElementById("menuPreview");
-    const menuType = document.getElementById("menuType");
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    let currentMenuKey = `kaay_menu_${menuType.value}`;
-    let menu = loadMenu(currentMenuKey);
+    let currentMenu = "bar";
 
-    function loadMenu(key) {
-      return JSON.parse(localStorage.getItem(key)) || {};
-    }
+    const menuSelector = document.getElementById("menuSelector");
+    const categoryInput = document.getElementById("category");
+    const nameInput = document.getElementById("name");
+    const priceInput = document.getElementById("price");
+    const descInput = document.getElementById("desc");
+    const menuDisplay = document.getElementById("menuDisplay");
 
-    function saveMenu() {
-      localStorage.setItem(currentMenuKey, JSON.stringify(menu));
-    }
+    menuSelector.addEventListener("change", () => {
+      currentMenu = menuSelector.value;
+      loadMenu();
+    });
 
-    function switchMenu() {
-      currentMenuKey = `kaay_menu_${menuType.value}`;
-      menu = loadMenu(currentMenuKey);
-      renderMenu();
-    }
-
-    function addCategory() {
-      const cat = categoryInput.value.trim();
-      if (cat && !menu[cat]) {
-        menu[cat] = [];
-        categoryInput.value = "";
-        saveMenu();
-        renderMenu();
-      }
+    async function loadMenu() {
+      const docRef = doc(db, "menus", currentMenu);
+      const docSnap = await getDoc(docRef);
+      const data = docSnap.exists() ? docSnap.data() : {};
+      displayMenu(data);
     }
 
-    function addProduct() {
-      const cat = categorySelect.value;
-      const name = productName.value.trim();
-      const price = productPrice.value.trim();
-      const desc = productDesc.value.trim();
-      if (cat && name) {
-        menu[cat].push({ name, price, desc });
-        productName.value = "";
-        productPrice.value = "";
-        productDesc.value = "";
-        saveMenu();
-        renderMenu();
-      }
+    async function saveItem(e) {
+      e.preventDefault();
+
+      const category = categoryInput.value.trim();
+      const name = nameInput.value.trim();
+      const price = priceInput.value.trim();
+      const desc = descInput.value.trim();
+
+      if (!category || !name) return;
+
+      const docRef = doc(db, "menus", currentMenu);
+      const docSnap = await getDoc(docRef);
+      let menuData = docSnap.exists() ? docSnap.data() : {};
+
+      if (!menuData[category]) menuData[category] = [];
+      menuData[category].push({ name, price, desc });
+
+      await setDoc(docRef, menuData);
+      loadMenu();
+
+      nameInput.value = "";
+      priceInput.value = "";
+      descInput.value = "";
     }
 
-    function editProduct(cat, index) {
-      const item = menu[cat][index];
-      const row = document.getElementById(`row-${cat}-${index}`);
-      row.innerHTML = `
-        <td><input id="edit-name-${cat}-${index}" value="${item.name}" /></td>
-        <td><input id="edit-price-${cat}-${index}" value="${item.price || ''}" /></td>
-        <td><textarea id="edit-desc-${cat}-${index}">${item.desc || ''}</textarea></td>
-        <td>
-          <button class="save-btn" onclick="saveEdit('${cat}', ${index})">Save</button>
-          <button class="delete-btn" onclick="deleteProduct('${cat}', ${index})">Delete</button>
-        </td>
-      `;
+    async function deleteItem(category, index) {
+      const docRef = doc(db, "menus", currentMenu);
+      const docSnap = await getDoc(docRef);
+      let menuData = docSnap.data();
+
+      menuData[category].splice(index, 1);
+      if (menuData[category].length === 0) delete menuData[category];
+      await setDoc(docRef, menuData);
+      loadMenu();
     }
 
-    function saveEdit(cat, index) {
-      const name = document.getElementById(`edit-name-${cat}-${index}`).value.trim();
-      const price = document.getElementById(`edit-price-${cat}-${index}`).value.trim();
-      const desc = document.getElementById(`edit-desc-${cat}-${index}`).value.trim();
-      if (name) {
-        menu[cat][index] = { name, price, desc };
-        saveMenu();
-        renderMenu();
-      }
-    }
+    function displayMenu(data) {
+      menuDisplay.innerHTML = "";
 
-    function deleteProduct(cat, index) {
-      if (confirm("Are you sure you want to delete this product?")) {
-        menu[cat].splice(index, 1);
-        saveMenu();
-        renderMenu();
-      }
-    }
-
-    function renderMenu() {
-      categorySelect.innerHTML = "";
-      menuPreview.innerHTML = "";
-
-      for (let category in menu) {
-        const option = document.createElement("option");
-        option.value = category;
-        option.textContent = category;
-        categorySelect.appendChild(option);
-
+      for (const category in data) {
         const section = document.createElement("div");
-        section.className = "category-section";
-        section.innerHTML = `<h2>${category}</h2>`;
+        section.className = "menu-section";
+        section.innerHTML = `<h3>${category}</h3>`;
 
-        const table = document.createElement("table");
-        table.innerHTML = `
-          <tr>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Description</th>
-            <th>Actions</th>
-          </tr>
-        `;
-
-        menu[category].forEach((item, idx) => {
-          const row = document.createElement("tr");
-          row.id = `row-${category}-${idx}`;
-          row.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.price || ''}</td>
-            <td>${item.desc || ''}</td>
-            <td>
-              <button class="edit-btn" onclick="editProduct('${category}', ${idx})">Edit</button>
-              <button class="delete-btn" onclick="deleteProduct('${category}', ${idx})">Delete</button>
-            </td>
+        data[category].forEach((item, index) => {
+          const itemDiv = document.createElement("div");
+          itemDiv.className = "item";
+          itemDiv.innerHTML = `
+            <div>
+              <strong>${item.name}</strong><br>
+              <small>${item.desc || ''}</small>
+            </div>
+            <div>
+              ${item.price || ''}
+              <span class="actions">
+                <button onclick="editItem('${category}', ${index})">Edit</button>
+                <button onclick="deleteItem('${category}', ${index})">Delete</button>
+              </span>
+            </div>
           `;
-          table.appendChild(row);
+          section.appendChild(itemDiv);
         });
 
-        section.appendChild(table);
-        menuPreview.appendChild(section);
+        menuDisplay.appendChild(section);
       }
     }
 
-    renderMenu();
+    window.deleteItem = deleteItem;
+
+    document.getElementById("productForm").addEventListener("submit", saveItem);
+    loadMenu();
   </script>
 </body>
 </html>
