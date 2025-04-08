@@ -7,37 +7,68 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #1a1a1a;
-      color: #fff;
+      background-color: #f8f8f8;
+      color: #000;
+      margin: 0;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #003366;
+      color: white;
+      padding: 0.5rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .header img {
+      height: 40px;
+      margin-right: 1rem;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      margin: 0;
+      flex: 1;
+      text-align: center;
+    }
+
+    .container {
       padding: 1rem;
     }
-    h1 {
-      text-align: center;
-      font-size: 2rem;
-      margin-bottom: 1rem;
-    }
+
     .section {
       margin-bottom: 2rem;
     }
+
     .section h2 {
       font-size: 1.4rem;
-      border-bottom: 2px solid #fff;
+      border-bottom: 2px solid #003366;
       padding-bottom: 0.3rem;
       margin-bottom: 1rem;
     }
+
     .item {
       display: flex;
       justify-content: space-between;
       margin-bottom: 0.6rem;
+      padding: 0.5rem;
+      border-bottom: 1px solid #ddd;
     }
+
     .price {
-      color: #ccc;
+      color: #555;
     }
+
     @media (max-width: 480px) {
       .item {
         flex-direction: column;
         align-items: flex-start;
       }
+
       .price {
         align-self: flex-end;
       }
@@ -45,8 +76,13 @@
   </style>
 </head>
 <body>
-  <h1>KAAY Bar Menu</h1>
-  <div id="menuOutput"></div>
+
+  <div class="header">
+    <img src="III_Army_Corps_(Greece_flag).png" alt="Logo" />
+    <h1>KAAY Bar Menu</h1>
+  </div>
+
+  <div class="container" id="menuOutput"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
