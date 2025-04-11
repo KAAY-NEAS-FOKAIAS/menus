@@ -64,7 +64,49 @@
       font-size: 0.9rem;
       color: #333;
     }
-  </style>
+  .accordion-section {
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .accordion-header {
+    background-color: #003366;
+    color: white;
+    padding: 1rem;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  .accordion-content {
+    display: none;
+    background-color: #f0f0f0;
+    color: black;
+    padding: 0.75rem 1rem;
+  }
+
+  .item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  .price {
+    color: #444;
+  }
+
+  @media (max-width: 480px) {
+    .item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .price {
+      align-self: flex-end;
+    }
+  }
+</style>
 </head>
 <body>
   <div class="header">
@@ -81,7 +123,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
-
+  
     const firebaseConfig = {
       apiKey: "AIzaSyB0HRhjtRkaTUq332zouyT2ZR-44KBd0kM",
       authDomain: "kaay-menus.firebaseapp.com",
@@ -90,39 +132,61 @@
       messagingSenderId: "1064707215004",
       appId: "1:1064707215004:web:1805e202273546e1dae759"
     };
-
+  
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-    let lang = 'gr';
+  
+    const output = document.getElementById("menuOutput");
+    let currentLang = 'gr'; // default language
+  
+    document.getElementById("langGR").addEventListener("click", () => {
+      currentLang = 'gr';
+      loadMenu();
+    });
+  
+    document.getElementById("langEN").addEventListener("click", () => {
+      currentLang = 'en';
+      loadMenu();
+    });
+  
     async function loadMenu() {
-      const docSnap = await getDoc(doc(db, 'menus', 'bar'));
-      const data = docSnap.exists() ? docSnap.data() : {};
-      const container = document.getElementById('menuContainer');
-      container.innerHTML = '';
-
-      for (const category in data) {
-        const div = document.createElement('div');
-        div.className = 'category';
-        div.innerHTML = `<h2>${category}</h2>`;
-        data[category].forEach(item => {
-          div.innerHTML += `
-            <div class="item">
-              <strong>${lang === 'gr' ? item.nameGR : item.nameEN}</strong><br>
-              <span class="desc">${lang === 'gr' ? item.descGR : item.descEN}</span><br>
-              <span class="price">${item.price || ''}</span>
-            </div>
-          `;
+      const docRef = doc(db, "menus", "bar");
+      const docSnap = await getDoc(docRef);
+      const menu = docSnap.exists() ? docSnap.data() : {};
+      output.innerHTML = '';
+  
+      for (let category in menu) {
+        const section = document.createElement("div");
+        section.className = "accordion-section";
+  
+        const header = document.createElement("div");
+        header.className = "accordion-header";
+        header.textContent = category;
+        header.addEventListener("click", () => {
+          const content = header.nextElementSibling;
+          content.style.display = content.style.display === "none" ? "block" : "none";
         });
-        container.appendChild(div);
+  
+        const content = document.createElement("div");
+        content.className = "accordion-content";
+  
+        menu[category].forEach(item => {
+          const div = document.createElement("div");
+          div.className = "item";
+          const name = currentLang === 'gr' ? item.nameGR : item.nameEN;
+          const desc = currentLang === 'gr' ? item.descGR : item.descEN;
+          div.innerHTML = `<span><strong>${name}</strong><br><small>${desc || ''}</small></span><span class="price">${item.price || ''}</span>`;
+          content.appendChild(div);
+        });
+  
+        content.style.display = "none"; // collapsed by default
+  
+        section.appendChild(header);
+        section.appendChild(content);
+        output.appendChild(section);
       }
     }
-
-    window.setLang = function (selectedLang) {
-      lang = selectedLang;
-      loadMenu();
-    };
-
+  
     loadMenu();
   </script>
 </body>
