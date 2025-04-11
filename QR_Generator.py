@@ -1,7 +1,7 @@
 import qrcode
 
 # URL of your GitHub Pages site
-url = "https://jimkiromitis.github.io/kaay_fokaia.github.io/"
+url = "https://kaay-neas-fokaias.github.io/menus/menu_bar.html"
 
 # Create QR code
 qr = qrcode.make(url)
