@@ -117,7 +117,18 @@
     </div>
     <button class="btn" onclick="addProduct()">Add Product</button>
   </div>
-
+  <div style="margin-top: 2rem;">
+    <h3>Rename Category</h3>
+    <div class="form-group">
+      <label for="oldCategory">Old Category Name</label>
+      <input type="text" id="oldCategory" />
+    </div>
+    <div class="form-group">
+      <label for="newCategory">New Category Name</label>
+      <input type="text" id="newCategory" />
+    </div>
+    <button class="btn" onclick="renameCategory()">Rename Category</button>
+  </div>
   <div id="tableContainer"></div>
 
   <!-- Edit Modal -->
@@ -227,6 +238,48 @@
       await setDoc(doc(db, "menus", currentMenu), currentData);
       renderTable();
     }
+    window.renameCategory = async function () {
+  const oldCategory = document.getElementById("oldCategory").value.trim();
+  const newCategory = document.getElementById("newCategory").value.trim();
+
+  if (!oldCategory || !newCategory) {
+    alert("Please fill out both fields.");
+    return;
+  }
+
+  if (oldCategory === newCategory) {
+    alert("New category name must be different.");
+    return;
+  }
+
+  const docRef = doc(db, "menus", currentMenu);
+  const docSnap = await getDoc(docRef);
+
+  if (!docSnap.exists()) {
+    alert("No data found for this menu.");
+    return;
+  }
+
+  const data = docSnap.data();
+
+  if (!data[oldCategory]) {
+    alert(`Category "${oldCategory}" not found.`);
+    return;
+  }
+
+  if (data[newCategory]) {
+    alert(`Category "${newCategory}" already exists.`);
+    return;
+  }
+
+  // Rename process
+  data[newCategory] = data[oldCategory];
+  delete data[oldCategory];
+
+  await setDoc(docRef, data);
+  alert(`Category renamed from "${oldCategory}" to "${newCategory}".`);
+  loadData();
+};
 
     loadData();
   </script>
