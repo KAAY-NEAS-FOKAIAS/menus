@@ -155,10 +155,7 @@
       const menu = docSnap.exists() ? docSnap.data() : {};
       output.innerHTML = '';
       
-      const categoryOrder = menu.categoryOrder || Object.keys(menu).filter(k => k !== "categoryOrder");
-
-        for (let category of categoryOrder) {
-        if (!menu[category]) continue;
+      for (let category in menu) {
         const section = document.createElement("div");
         section.className = "accordion-section";
   
