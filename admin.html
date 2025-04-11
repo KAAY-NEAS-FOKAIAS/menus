@@ -7,94 +7,134 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background-color: #111;
-      color: #fff;
-      padding: 2rem;
-      max-width: 800px;
-      margin: auto;
+      background-color: #f8f8f8;
+      color: #000;
+      margin: 0;
+      padding: 1rem;
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
-
-    form, .menu-section {
-      margin-bottom: 2rem;
-    }
-
-    input, select, button {
-      padding: 0.7rem;
-      font-size: 1rem;
-      border-radius: 6px;
-      border: none;
-      margin-bottom: 0.5rem;
-      width: 100%;
-    }
-
-    input, select {
-      background-color: #222;
-      color: #fff;
-    }
-
-    button {
-      background-color: #00b894;
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #003366;
       color: white;
+      padding: 0.5rem 1rem;
+    }
+
+    .header img {
+      height: 40px;
+      margin-right: 1rem;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      margin: 0;
+      flex: 1;
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.25rem;
+      box-sizing: border-box;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      background-color: #003366;
+      color: white;
+      border: none;
       cursor: pointer;
     }
 
-    button:hover {
-      background-color: #019875;
+    .btn:hover {
+      background-color: #0055aa;
     }
 
-    .menu-section h3 {
-      border-bottom: 1px solid #444;
-      padding-bottom: 0.3rem;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
     }
 
-    .item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.4rem 0;
-      border-bottom: 1px dashed #333;
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.5rem;
+      text-align: left;
     }
 
-    .actions button {
-      margin-left: 5px;
-      padding: 4px 8px;
-      font-size: 0.9rem;
+    th {
+      background-color: #003366;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <h1>KAAY Admin Panel</h1>
+  <div class="header">
+    <img src="III_Army_Corps_(Greece_flag).png" alt="Logo" />
+    <h1>KAAY Admin Panel</h1>
+  </div>
 
-  <label for="menuSelector">Choose Menu:</label>
-  <select id="menuSelector">
-    <option value="bar">Bar</option>
-    <option value="restaurant">Restaurant</option>
-    <option value="mini_market">Mini Market</option>
-  </select>
+  <div>
+    <div class="form-group">
+      <label for="menuSelect">Choose Menu</label>
+      <select id="menuSelect">
+        <option value="bar">Bar</option>
+        <option value="restaurant">Restaurant</option>
+        <option value="mini_market">Mini Market</option>
+      </select>
+    </div>
 
-  <form id="productForm">
-    <input id="category" placeholder="Category" required />
-    <input id="name" placeholder="Product Name" required />
-    <input id="price" placeholder="Price (optional)" />
-    <input id="desc" placeholder="Description (optional)" />
-    <button type="submit">Add Product</button>
-  </form>
+    <div class="form-group">
+      <label>Category</label>
+      <input type="text" id="category" />
+    </div>
+    <div class="form-group">
+      <label>Product Name (GR)</label>
+      <input type="text" id="nameGR" />
+    </div>
+    <div class="form-group">
+      <label>Product Name (EN)</label>
+      <input type="text" id="nameEN" />
+    </div>
+    <div class="form-group">
+      <label>Description (GR)</label>
+      <textarea id="descGR"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Description (EN)</label>
+      <textarea id="descEN"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Price (Optional)</label>
+      <input type="text" id="price" />
+    </div>
+    <button class="btn" onclick="addProduct()">Add Product</button>
+  </div>
 
-  <div id="menuDisplay"></div>
+  <div id="tableContainer"></div>
+
+  <!-- Edit Modal -->
+  <div id="editModal" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); background:white; padding:1rem; border:2px solid #003366; z-index:1000;">
+    <h3>Edit Product</h3>
+    <input type="text" id="editNameGR" placeholder="Name GR" /><br><br>
+    <input type="text" id="editNameEN" placeholder="Name EN" /><br><br>
+    <textarea id="editDescGR" placeholder="Description GR"></textarea><br><br>
+    <textarea id="editDescEN" placeholder="Description EN"></textarea><br><br>
+    <input type="text" id="editPrice" placeholder="Price" /><br><br>
+    <button class="btn" onclick="saveEdit()">Save</button>
+    <button class="btn" onclick="closeEdit()">Cancel</button>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-    import {
-      getFirestore,
-      doc,
-      getDoc,
-      setDoc
-    } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyB0HRhjtRkaTUq332zouyT2ZR-44KBd0kM",
@@ -108,98 +148,87 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    let currentData = {};
     let currentMenu = "bar";
+    let currentEdit = { category: '', index: -1 };
 
-    const menuSelector = document.getElementById("menuSelector");
-    const categoryInput = document.getElementById("category");
-    const nameInput = document.getElementById("name");
-    const priceInput = document.getElementById("price");
-    const descInput = document.getElementById("desc");
-    const menuDisplay = document.getElementById("menuDisplay");
-
-    menuSelector.addEventListener("change", () => {
-      currentMenu = menuSelector.value;
-      loadMenu();
+    document.getElementById("menuSelect").addEventListener("change", async (e) => {
+      currentMenu = e.target.value;
+      await loadData();
     });
 
-    async function loadMenu() {
+    async function loadData() {
       const docRef = doc(db, "menus", currentMenu);
       const docSnap = await getDoc(docRef);
-      const data = docSnap.exists() ? docSnap.data() : {};
-      displayMenu(data);
+      currentData = docSnap.exists() ? docSnap.data() : {};
+      renderTable();
     }
 
-    async function saveItem(e) {
-      e.preventDefault();
-
-      const category = categoryInput.value.trim();
-      const name = nameInput.value.trim();
-      const price = priceInput.value.trim();
-      const desc = descInput.value.trim();
-
-      if (!category || !name) return;
-
-      const docRef = doc(db, "menus", currentMenu);
-      const docSnap = await getDoc(docRef);
-      let menuData = docSnap.exists() ? docSnap.data() : {};
-
-      if (!menuData[category]) menuData[category] = [];
-      menuData[category].push({ name, price, desc });
-
-      await setDoc(docRef, menuData);
-      loadMenu();
-
-      nameInput.value = "";
-      priceInput.value = "";
-      descInput.value = "";
-    }
-
-    async function deleteItem(category, index) {
-      const docRef = doc(db, "menus", currentMenu);
-      const docSnap = await getDoc(docRef);
-      let menuData = docSnap.data();
-
-      menuData[category].splice(index, 1);
-      if (menuData[category].length === 0) delete menuData[category];
-      await setDoc(docRef, menuData);
-      loadMenu();
-    }
-
-    function displayMenu(data) {
-      menuDisplay.innerHTML = "";
-
-      for (const category in data) {
-        const section = document.createElement("div");
-        section.className = "menu-section";
-        section.innerHTML = `<h3>${category}</h3>`;
-
-        data[category].forEach((item, index) => {
-          const itemDiv = document.createElement("div");
-          itemDiv.className = "item";
-          itemDiv.innerHTML = `
-            <div>
-              <strong>${item.name}</strong><br>
-              <small>${item.desc || ''}</small>
-            </div>
-            <div>
-              ${item.price || ''}
-              <span class="actions">
-                <button onclick="editItem('${category}', ${index})">Edit</button>
-                <button onclick="deleteItem('${category}', ${index})">Delete</button>
-              </span>
-            </div>
-          `;
-          section.appendChild(itemDiv);
+    function renderTable() {
+      const container = document.getElementById("tableContainer");
+      container.innerHTML = '';
+      for (let category in currentData) {
+        let html = `<h3>${category}</h3><table><tr><th>Name GR</th><th>Name EN</th><th>Description GR</th><th>Description EN</th><th>Price</th><th>Actions</th></tr>`;
+        currentData[category].forEach((item, index) => {
+          html += `<tr><td>${item.nameGR}</td><td>${item.nameEN}</td><td>${item.descGR}</td><td>${item.descEN}</td><td>${item.price || ''}</td>
+                   <td><button onclick="editProduct('${category}', ${index})">Edit</button> <button onclick="deleteProduct('${category}', ${index})">Delete</button></td></tr>`;
         });
-
-        menuDisplay.appendChild(section);
+        html += '</table>';
+        container.innerHTML += html;
       }
     }
 
-    window.deleteItem = deleteItem;
+    window.editProduct = function(category, index) {
+      currentEdit = { category, index };
+      const item = currentData[category][index];
+      document.getElementById("editNameGR").value = item.nameGR;
+      document.getElementById("editNameEN").value = item.nameEN;
+      document.getElementById("editDescGR").value = item.descGR;
+      document.getElementById("editDescEN").value = item.descEN;
+      document.getElementById("editPrice").value = item.price || '';
+      document.getElementById("editModal").style.display = "block";
+    }
 
-    document.getElementById("productForm").addEventListener("submit", saveItem);
-    loadMenu();
+    window.closeEdit = function() {
+      document.getElementById("editModal").style.display = "none";
+    }
+
+    window.saveEdit = async function() {
+      const item = {
+        nameGR: document.getElementById("editNameGR").value,
+        nameEN: document.getElementById("editNameEN").value,
+        descGR: document.getElementById("editDescGR").value,
+        descEN: document.getElementById("editDescEN").value,
+        price: document.getElementById("editPrice").value
+      };
+      currentData[currentEdit.category][currentEdit.index] = item;
+      await setDoc(doc(db, "menus", currentMenu), currentData);
+      closeEdit();
+      renderTable();
+    }
+
+    window.deleteProduct = async function(category, index) {
+      currentData[category].splice(index, 1);
+      await setDoc(doc(db, "menus", currentMenu), currentData);
+      renderTable();
+    }
+
+    window.addProduct = async function() {
+      const category = document.getElementById("category").value;
+      const item = {
+        nameGR: document.getElementById("nameGR").value,
+        nameEN: document.getElementById("nameEN").value,
+        descGR: document.getElementById("descGR").value,
+        descEN: document.getElementById("descEN").value,
+        price: document.getElementById("price").value
+      };
+      if (!currentData[category]) currentData[category] = [];
+      currentData[category].push(item);
+      await setDoc(doc(db, "menus", currentMenu), currentData);
+      renderTable();
+    }
+
+    loadData();
   </script>
 </body>
 </html>
