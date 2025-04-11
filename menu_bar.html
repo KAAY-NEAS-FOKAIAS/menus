@@ -113,8 +113,8 @@
     <img src="III_Army_Corps_(Greece_flag).png" alt="Logo" />
     <h1>KAAY Bar Menu</h1>
     <div class="lang-switch">
-      <img src="https://flagcdn.com/w20/gr.png" alt="Greek" onclick="setLang('gr')" />
-      <img src="https://flagcdn.com/w20/gb.png" alt="English" onclick="setLang('en')" />
+        <img src="https://flagcdn.com/w20/gr.png" alt="Greek" id="langGR" />
+        <img src="https://flagcdn.com/w20/gb.png" alt="English" id="langEN" />
     </div>
   </div>
 
@@ -136,7 +136,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
   
-    const output = document.getElementById("menuOutput");
+    const output = document.getElementById("menuContainer");
     let currentLang = 'gr'; // default language
   
     document.getElementById("langGR").addEventListener("click", () => {
