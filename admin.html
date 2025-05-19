@@ -144,6 +144,52 @@
   </div>
 
   <script type="module">
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0HRhjtRkaTUq332zouyT2ZR-44KBd0kM",
+    authDomain: "kaay-menus.firebaseapp.com",
+    projectId: "kaay-menus",
+    storageBucket: "kaay-menus.firebasestorage.app",
+    messagingSenderId: "1064707215004",
+    appId: "1:1064707215004:web:1805e202273546e1dae759"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  let currentData = {};
+  let currentMenu = "bar";
+  let currentEdit = { category: '', index: -1 };
+
+  // Auth State Observer
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById("adminPanel").style.display = "block";
+      document.getElementById("loginForm").style.display = "none";
+      loadData();
+    } else {
+      document.getElementById("adminPanel").style.display = "none";
+      document.getElementById("loginForm").style.display = "block";
+    }
+  });
+
+  // Sign In Function
+  window.login = function() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    signInWithEmailAndPassword(auth, email, password)
+      .catch(err => alert("Login failed: " + err.message));
+  }
+
+  // Sign Out
+  window.logout = function() {
+    signOut(auth);
+  }
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
     import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
